@@ -3,8 +3,10 @@ const User = require("../models/user.models.js");
 const Tag = require("../models/tag.models.js");
 const { getRecommendationsForUser, putRecommendationsForUser } = require("../utils/cache.js");
 
+const options = { fullDocument: "updateLookup" };
+const pipeline = [];
 exports.watchEvents = () => {
-    Event.watch().on("change", async next => {
+    Event.watch(pipeline, options).on("change", async next => {
         switch (next.operationType) {
             case "insert":
             case "update":

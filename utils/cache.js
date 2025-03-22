@@ -1,5 +1,6 @@
 const User = require("../models/user.models.js");
 const Event = require("../models/event.models.js");
+const Tag = require("../models/tag.models.js");
 
 const recommendations = {}
 
@@ -13,7 +14,9 @@ exports.initializeCache = async () =>  {
             for (const tag of event.tags) {
                 var hasTag = false;
                 for (const userTag of user.tags) {
-                    if (tag.name === userTag.name) {
+                    const tagSchema = await Tag.findOne({ _id: tag });
+                    const userTagSchema = await Tag.findOne({ _id: userTag });
+                    if (tagSchema.name === userTagSchema.name) {
                         hasTag = true;
                         break;
                     }
