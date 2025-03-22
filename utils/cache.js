@@ -8,7 +8,7 @@ exports.initializeCache = async () =>  {
     const users = await User.find();
     const events = await Event.find();
     for (const user of users) {
-        recommendations[user] = new Set();
+        recommendations[user._id] = new Set();
         for (const event of events) {
             for (const tag of event.tags) {
                 var hasTag = false;
@@ -21,7 +21,7 @@ exports.initializeCache = async () =>  {
                 if (!hasTag) {
                     continue;
                 }
-                recommendations[user].add(event);
+                recommendations[user._id].add(event);
                 break;
             }
         }
@@ -30,11 +30,11 @@ exports.initializeCache = async () =>  {
 }
 
 exports.getRecommendationsForUser = user => {
-    return recommendations[user];
+    return recommendations[user._id];
 }
 
 exports.putRecommendationsForUser = (user, events) => {
-    recommendations[user] = events;
+    recommendations[user._id] = events;
     console.log("New recommendations added for user.");
     console.log(recommendations);
 }
