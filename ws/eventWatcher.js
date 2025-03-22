@@ -10,15 +10,17 @@ exports.watchEvents = () => {
         switch (next.operationType) {
             case "insert":
             case "update":
-                // TODO: Sort events for a particular user using the number of tags that are matched.
                 const event = next.fullDocument;
                 const users = await User.find();
                 for (const user of users) {
                     const recommendationsForUser = getRecommendationsForUser(user);
-                    if (recommendationsForUser == null) {
+                    if (recommendationsForUser === undefined) {
                         continue;
                     }
+
+                    const recommendationsForUserAsSet = new Set(recommendationsForUser);
                     
+                    var matchedTags = 0;
                     for (const tag of event.tags) {
                         var hasTag = false;
                         for (const userTag of user.tags) {
@@ -33,11 +35,21 @@ exports.watchEvents = () => {
                             continue;
                         }
 
-                        recommendationsForUser.add(event);
-                        break;
+                        matchedTags += 1;
                     }
+                    for (const recommendation of recommendationsForUserAsSet) {
+                        if (recommendation.eventId === event._id.toString()) {
+                            recommendationsForUserAsSet.delete(recommendation);
+                            break;
+                        }
+                    }
+                    recommendationsForUserAsSet.add({ matchedTags: matchedTags, eventId: event._id.toString() });
+                    const recommendationsForUserAsArray = Array.from(recommendationsForUserAsSet);
+                    recommendationsForUserAsArray.sort((a, b) => {
+                        return b.matchedTags - a.matchedTags;
+                    })
 
-                    putRecommendationsForUser(user, recommendationsForUser)
+                    putRecommendationsForUser(user, recommendationsForUserAsArray)
                 }
                 break;
         }

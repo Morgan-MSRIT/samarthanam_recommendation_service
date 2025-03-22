@@ -5,12 +5,12 @@ const Tag = require("../models/tag.models.js");
 const recommendations = {}
 
 exports.initializeCache = async () =>  {
-    // TODO: Sort events for a particular user using the number of tags that are matched.
     const users = await User.find();
     const events = await Event.find();
     for (const user of users) {
-        recommendations[user._id] = new Set();
+        var recommendationsForUser = new Set();
         for (const event of events) {
+            var matchedTags = 0;
             for (const tag of event.tags) {
                 var hasTag = false;
                 for (const userTag of user.tags) {
@@ -24,10 +24,15 @@ exports.initializeCache = async () =>  {
                 if (!hasTag) {
                     continue;
                 }
-                recommendations[user._id].add(event);
-                break;
+                matchedTags += 1;
             }
+            recommendationsForUser.add({ matchedTags: matchedTags, eventId: event._id.toString() });
         }
+        const recommendationsForUserAsArray = Array.from(recommendationsForUser);
+        recommendationsForUserAsArray.sort((a, b) => {
+            return b.matchedTags - a.matchedTags;
+        })
+        recommendations[user._id] = recommendationsForUserAsArray;
     }
     console.log(recommendations);
 }
@@ -36,8 +41,8 @@ exports.getRecommendationsForUser = user => {
     return recommendations[user._id];
 }
 
-exports.putRecommendationsForUser = (user, events) => {
-    recommendations[user._id] = events;
+exports.putRecommendationsForUser = (user, recommendation) => {
+    recommendations[user._id] = recommendation;
     console.log("New recommendations added for user.");
     console.log(recommendations);
 }
