@@ -8,7 +8,8 @@ const cors=require("cors");
 const dotenv=require("dotenv");
 const { watchEvents } = require("./ws/eventWatcher.js");
 const { initializeCache } = require("./utils/cache.js");
-const { recommendationRoutes } = require("./routes/recommendation.routes.js")
+const { recommendationRoutes } = require("./routes/recommendation.routes.js");
+const { watchUsers } = require("./ws/userWatcher.js");
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ app.listen(PORT,async ()=>{
     await initializeCache();
     console.log(`App is running at ${PORT}`)
     watchEvents();
+    watchUsers();
 })
 
 
