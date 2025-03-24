@@ -10,8 +10,10 @@ exports.watchEvents = () => {
         switch (next.operationType) {
             case "insert":
             case "update":
-                const event = next.fullDocument;
-                const users = await User.find();
+                const event = next.fullDocument.populate('tags')
+                    .populate('user', 'name')
+                    .populate('tasks');
+                const users = await User.find().populate('tags');
                 for (const user of users) {
                     const recommendationsForUser = getRecommendationsForUser(user);
                     if (recommendationsForUser === undefined) {
@@ -24,9 +26,7 @@ exports.watchEvents = () => {
                     for (const tag of event.tags) {
                         var hasTag = false;
                         for (const userTag of user.tags) {
-                            const tagSchema = await Tag.findOne({ _id: tag });
-                            const userTagSchema = await Tag.findOne({ _id: userTag });
-                            if (tagSchema.name === userTagSchema.name) {
+                            if (tag.name === userTag.name) {
                                 hasTag = true;
                                 break;
                             }
@@ -43,7 +43,7 @@ exports.watchEvents = () => {
                             break;
                         }
                     }
-                    recommendationsForUserAsSet.add({ matchedTags: matchedTags, eventId: event._id.toString() });
+                    recommendationsForUserAsSet.add({ matchedTags: matchedTags, event: event });
                     const recommendationsForUserAsArray = Array.from(recommendationsForUserAsSet);
                     recommendationsForUserAsArray.sort((a, b) => {
                         return b.matchedTags - a.matchedTags;

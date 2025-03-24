@@ -3,9 +3,9 @@ const { getRecommendationsForUser } = require("../utils/cache");
 
 exports.getRecommendation= async (req, res) => {
     try {
-        const name = req.body.userName;
-        const email = req.body.userEmail;
-        const user = await User.findOne({ name: name, email: email });
+        const id = req.body.userId;
+        console.log(req.body);
+        const user = await User.findOne({ _id: id });
         const recommendationsForUser = getRecommendationsForUser(user);
 
         if (recommendationsForUser === null) {
@@ -18,7 +18,7 @@ exports.getRecommendation= async (req, res) => {
         return res.status(200).json({
             success: true,
             message: "Success",
-            recommendations: recommendationsForUser,
+            data: recommendationsForUser,
         });
     } catch (err) {
         console.log(err.message)
