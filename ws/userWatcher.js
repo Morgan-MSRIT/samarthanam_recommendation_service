@@ -10,7 +10,7 @@ exports.watchUsers = () => {
         switch (next.operationType) {
             case "insert":
             case "update":
-                const user = next.fullDocument.populate('tags');
+                const user = await User.findOne({ _id: next.fullDocument._id }).populate('tags');
                 const events = await Event.find().populate('tags')
                     .populate('user', 'name')
                     .populate('tasks');

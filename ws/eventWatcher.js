@@ -10,7 +10,7 @@ exports.watchEvents = () => {
         switch (next.operationType) {
             case "insert":
             case "update":
-                const event = next.fullDocument.populate('tags')
+                const event = await Event.findOne({ _id: next.fullDocument._id }).populate('tags')
                     .populate('user', 'name')
                     .populate('tasks');
                 const users = await User.find().populate('tags');
